@@ -5,73 +5,88 @@
 
 struct Node {
   char id;
-  bool operator< (const Node& rhs) const {
-    return this->id < rhs.id;
-  }
+
+  Node(char);
+
+  bool
+  operator< (const Node& rhs) const;
 };
 
 class Graph {
 
-  private:
-    std::map<Node, std::vector<Node> > mAdjacencyMap;
-    
   public:
-    Graph() {
-    
-    }; 
-    
-    void insertNode(Node n) {
-      std::vector<Node> neighbors;
-      std::pair<Node, std::vector<Node> > keyValuePair = std::make_pair(n, neighbors);
-      mAdjacencyMap.insert(keyValuePair);
-    }
 
-    std::vector<Node> getAdjacentNodes(Node n) {
-      return mAdjacencyMap[n];
-    }
+    Graph() = default;
 
-    /*
-     How can I avoid an extra copy here? Without assigning neighbors back, it didn't work..
-    */
-    void insertEdge(std::pair<Node, Node> edge) {
-      std::vector<Node> neighbors = mAdjacencyMap[edge.first];
-      neighbors.emplace_back(edge.second);
-      mAdjacencyMap[edge.first] = neighbors;
-    }
+    const std::vector<Node>&
+    getAdjacentNodes(const Node & n) const;
 
-    void printGraph() {
-      for (std::map<Node, std::vector<Node> >::iterator it = mAdjacencyMap.begin(); it != mAdjacencyMap.end(); ++it) {
-	std::cout << it->first.id << "->";
-        for (auto neighbor : it->second) {
-          std::cout << neighbor.id << ',';
-        }
-        std::cout << '\n';
-      }
-    }
+    void
+    insertEdge(const Node & src, const Node & dest);
+
+    friend std::ostream&
+    operator<<(std::ostream&, const Graph &);
+
+  private:
+    std::map<Node, std::vector<Node>> mAdjacencyMap;
 };
 
+Node::Node(char c) : id(c) {
+}
+
+bool
+Node::operator<(const Node & rhs) const {
+  return id < rhs.id;
+}
+
+std::ostream&
+operator<<(std::ostream& os, const Node & n) {
+  return (os << n.id);
+}
+
+const std::vector<Node>&
+Graph::getAdjacentNodes(const Node & n) const {
+  return mAdjacencyMap.at(n);
+}
+
+void
+Graph::insertEdge(Node const & src, Node const & dest) {
+  mAdjacencyMap.try_emplace(src);
+  mAdjacencyMap[src].push_back(dest);
+}
+
+std::ostream&
+operator<<(std::ostream &os, const Graph & g) {
+  for (const auto & [src, adjacentNodes] : g.mAdjacencyMap) {
+    os << src << "=>";
+    bool firstItem = true;
+    
+    for(auto & node : adjacentNodes) {
+      if (!firstItem) {
+        os << ',';
+      }
+      os << node;
+      firstItem = false;
+    }
+    os << '\n';
+  }
+  return os;
+}
+
 int main() {
-  Node a = {'a'};
-  Node b = {'b'};
-  Node c = {'c'};
-  
   Graph g;
 
-  g.insertNode(a);
-  g.insertNode(b);
-  g.insertNode(c);
+  g.insertEdge('a', 'b');
+  g.insertEdge('a', 'c');
+  g.insertEdge('b', 'c');
 
-  std::pair<Node, Node> edge = std::make_pair(a, b);
-  std::pair<Node, Node> edge2 = std::make_pair(a, c);
-  std::pair<Node, Node> edge3 = std::make_pair(b, c);
 
-  g.insertEdge(edge); 
-  g.insertEdge(edge2);
-  g.insertEdge(edge3);
-  
-  g.printGraph();
+  std::cout << g << '\n';
 
-  std::vector<Node> neighbors = g.getAdjacentNodes(a);
-
-  std::cout << "Adjacent Nodes " << neighbors[0].id << neighbors[1].id << std::endl;
+  const auto neighbors = g.getAdjacentNodes({'a'}); 
+  std::cout<< "Adjacent Nodes to 'a' are: ";
+  for (auto n : neighbors) {
+    std::cout << ' ' <<  n;
+  }
+  std::cout << std::endl;
 }
