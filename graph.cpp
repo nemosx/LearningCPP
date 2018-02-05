@@ -19,10 +19,10 @@ class Graph {
     Graph() = default;
 
     const std::vector<Node>&
-    getAdjacentNodes(const Node & n) const;
+    getAdjacentNodes(const Node& n) const;
 
     void
-    insertEdge(const Node & src, const Node & dest);
+    insertEdge(const Node& src, const Node& dest);
 
     friend std::ostream&
     operator<<(std::ostream&, const Graph &);
@@ -35,28 +35,29 @@ Node::Node(char c) : id(c) {
 }
 
 bool
-Node::operator<(const Node & rhs) const {
+Node::operator<(const Node& rhs) const {
   return id < rhs.id;
 }
 
 std::ostream&
-operator<<(std::ostream& os, const Node & n) {
+operator<<(std::ostream& os, const Node& n) {
   return (os << n.id);
 }
 
 const std::vector<Node>&
-Graph::getAdjacentNodes(const Node & n) const {
+Graph::getAdjacentNodes(const Node& n) const {
   return mAdjacencyMap.at(n);
 }
 
 void
 Graph::insertEdge(Node const & src, Node const & dest) {
   mAdjacencyMap.try_emplace(src);
+  mAdjacencyMap.try_emplace(dest);
   mAdjacencyMap[src].push_back(dest);
 }
 
 std::ostream&
-operator<<(std::ostream &os, const Graph & g) {
+operator<<(std::ostream &os, const Graph& g) {
   for (const auto & [src, adjacentNodes] : g.mAdjacencyMap) {
     os << src << "=>";
     bool firstItem = true;
@@ -73,13 +74,24 @@ operator<<(std::ostream &os, const Graph & g) {
   return os;
 }
 
+
+void
+dfsTraversal(const Graph& g, const Node& start) {
+  auto neighbors = g.getAdjacentNodes(start);
+  for (auto n : neighbors) {
+    dfsTraversal(g, n);
+  }
+  std::cout<< "Finished exploring: " << start << std::endl;
+}
+
 int main() {
   Graph g;
 
   g.insertEdge('a', 'b');
-  g.insertEdge('a', 'c');
   g.insertEdge('b', 'c');
-
+  g.insertEdge('b', 'd');
+  g.insertEdge('d', 'e');
+  g.insertEdge('c', 'h');
 
   std::cout << g << '\n';
 
@@ -89,4 +101,6 @@ int main() {
     std::cout << ' ' <<  n;
   }
   std::cout << std::endl;
+
+  dfsTraversal(g, {'a'});
 }
