@@ -1,3 +1,3 @@
 # LearningCPP
 
-To compile:  g++ graph.cpp -std=c++11 -o graph
+To compile: g++ graph.cpp -std=c++1z -o graph.out 
